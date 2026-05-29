@@ -1,1 +1,146 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diario dell'Umore</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d9e8a">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1><i class="ti ti-mood-smile"></i> Diario dell'umore</h1>
+    <div class="header-right">
+      <div class="month-nav">
+        <button onclick="changeMonth(-1)">‹</button>
+        <span id="monthLabel"></span>
+        <button onclick="changeMonth(1)">›</button>
+      </div>
+    </div>
+  </div>
 
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('oggi',this)"><i class="ti ti-edit"></i> Oggi</button>
+    <button class="tab" onclick="switchTab('grafico',this)"><i class="ti ti-chart-bar"></i> Grafico</button>
+    <button class="tab" onclick="switchTab('promemoria',this)"><i class="ti ti-bell"></i> Promemoria</button>
+  </div>
+
+  <div id="sec-oggi" class="section active">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-mood-smile"></i> Umore del giorno</div>
+      <div id="moodEntriesContainer"></div>
+      <button class="add-btn" onclick="addMoodEntry()"><i class="ti ti-plus"></i> Aggiungi rilevazione umore</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-moon"></i> Sonno & peso</div>
+      <div class="field-row">
+        <label class="field-label" for="hoursSlept">Ore di sonno</label>
+        <input class="field-input" id="hoursSlept" type="number" min="0" max="24" step="0.5" placeholder="—">
+      </div>
+      <label class="sub-label"><i class="ti ti-notes"></i> Note sul sonno</label>
+      <textarea class="sleep-notes" id="sleepNotes" rows="2" placeholder="es. sonno agitato, svegli di notte, sogni vividi..."></textarea>
+      <div class="field-row" style="margin-top:10px">
+        <label class="field-label" for="weightField">Peso (kg)</label>
+        <input class="field-input" id="weightField" type="number" min="30" max="200" step="0.1" placeholder="—">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-brain"></i> Ansia & irritabilità</div>
+      <div class="field-row">
+        <label class="field-label">Ansia</label>
+        <div class="scale-row" id="anxietyBtns"></div>
+      </div>
+      <div class="field-row" style="margin-top:8px">
+        <label class="field-label">Irritabilità</label>
+        <div class="scale-row" id="irritBtns"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-pill"></i> Farmaci</div>
+      <div id="medList"></div>
+      <button class="add-btn" onclick="addMed()"><i class="ti ti-plus"></i> Aggiungi farmaco</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-wine"></i> Alcol / droghe</div>
+      <div class="field-row">
+        <label class="field-label">Consumo (es. unità/tipo)</label>
+        <input class="field-input" id="alcoholField" type="text" placeholder="—" style="width:110px">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-notes"></i> Note generali</div>
+      <textarea id="notesField" class="general-notes" placeholder="Annotazioni libere..."></textarea>
+    </div>
+
+    <button class="save-btn" onclick="saveDay()"><i class="ti ti-device-floppy"></i> Salva giornata</button>
+  </div>
+
+  <div id="sec-grafico" class="section">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-calendar-month"></i> Tabella mensile</div>
+      <div class="chart-area">
+        <table class="mood-table">
+          <thead>
+            <tr>
+              <th>Giorno</th><th>Umore</th><th>Sonno</th><th>Note sonno</th>
+              <th>Peso</th><th>Ansia</th><th>Irrit.</th><th>Farmaci</th><th>Note</th>
+            </tr>
+          </thead>
+          <tbody id="monthTableBody"></tbody>
+        </table>
+      </div>
+      <button class="dl-btn" onclick="downloadCSV()"><i class="ti ti-download"></i> Scarica CSV</button>
+      <button class="dl-btn" onclick="exportBackup()"><i class="ti ti-lock"></i> Esporta backup cifrato</button>
+      <button class="dl-btn" onclick="importBackup()"><i class="ti ti-lock-open"></i> Importa backup</button>
+    </div>
+  </div>
+
+  <div id="sec-promemoria" class="section">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-bell"></i> Promemoria giornalieri</div>
+      <p class="hint">Abilita le notifiche per ricevere i promemoria.</p>
+      <div class="reminder-row">
+        <i class="ti ti-sun" style="font-size:20px;color:#ba7517"></i>
+        <div class="reminder-info"><strong>Promemoria mattina</strong><span>Segna il tuo umore di metà mattina</span></div>
+        <div class="reminder-time">11:00</div>
+        <button class="toggle-btn on" onclick="toggleReminder(this,'mattina')"></button>
+      </div>
+      <div class="reminder-row">
+        <i class="ti ti-sunset" style="font-size:20px;color:#993556"></i>
+        <div class="reminder-info"><strong>Promemoria sera</strong><span>Segna il tuo umore del tardo pomeriggio</span></div>
+        <div class="reminder-time">18:00</div>
+        <button class="toggle-btn on" onclick="toggleReminder(this,'sera')"></button>
+      </div>
+      <div class="reminder-row">
+        <i class="ti ti-scale" style="font-size:20px;color:#185fa5"></i>
+        <div class="reminder-info"><strong>Promemoria peso</strong><span>Giorni 14 e 28 del mese</span></div>
+        <div class="reminder-time">08:00</div>
+        <button class="toggle-btn" onclick="toggleReminder(this,'peso')"></button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-info-circle"></i> Come usare su Android</div>
+      <ol class="hint-list">
+        <li>Apri l'app in <strong>Chrome</strong></li>
+        <li>3 puntini → <strong>Aggiungi a schermata Home</strong></li>
+        <li>Consenti le notifiche quando richiesto</li>
+        <li>Per promemoria automatici usa <strong>Tasker</strong></li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="public/app.js"></script>
+<input type="file" id="importFileInput" accept=".json" style="display:none" onchange="handleImportFile(this)">
+</body>
+</html>
